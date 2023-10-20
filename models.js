@@ -85,6 +85,18 @@ class StoryList {
     user.ownStories.unshift(story);
     return story;
   }
+
+  async removeUserStory(user, storyId){
+    await axios({
+      url: `${BASE_URL}/stories/${storyId}`,
+      method: "DELETE",
+      data: {token: user.loginToken}
+    });
+    //rid of removed story
+    this.stories = this.stories.filter(story=>story.storyId !== storyId);
+    user.ownStories = user.ownStories.filter(story=>story.storyId !== storyId);
+    user.favorites = user.favorites.filter(story=>story.storyId !== storyId);
+  }
 }
 
 
@@ -208,16 +220,15 @@ class User {
 
 // can write them separately .add + remove + updateFavorite.. 
   async addFavorite(story){
-    console.log("addFavorite");
     this.favorites.push(story);
     await this.updateFavorite("add",story);
 }
-  async deleteFavorite(story){
-    this.favorites = this.favorites.filter(s => s.storyId !==story.story.Id);
+  async unFavorite(story){
+    this.favorites = this.favorites.filter(s => s.storyId !==story.storyId);
     await this.updateFavorite("delete",story);
   }
   async updateFavorite(currentState, story) {
-    console.log("updateFavorite");
+    console.debug("updateFavorite");
     const method = currentState == "add" ? "POST" : "DELETE";
     const token = this.loginToken;
     await axios({
